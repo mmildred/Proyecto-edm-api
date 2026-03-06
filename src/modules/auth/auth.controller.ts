@@ -3,10 +3,10 @@ import { AuthService } from './auth.service';
 
 @Controller('api/auth')
 export class AuthController {
-  constructor(private authSvc: AuthService) {}
+  constructor(private authService: AuthService) {  }
 
-  @Get('/o')
+  @Get()
   public login(): string {
-    return this.authSvc.login();
+    return this.authService.login();
   }
 }

@@ -44,11 +44,14 @@ export class TaskController {
 
   @Delete(':id')
   public async deleteTask(@Param("id", ParseIntPipe) id: number): Promise<boolean> {
-    const result = await this.taskSvc.deleteTask(id);
-
-    if (!result) {
-     throw new HttpException(`No se puede eliminar la tarea con ID ${id}`, HttpStatus.NOT_FOUND);
+    try {
+      await this.taskSvc.deleteTask(id);
+      return true;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new HttpException(`Tarea con ID ${id} no encontrada`, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException("Error al eliminar la tarea", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return result;
   }
 }
