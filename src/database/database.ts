@@ -1,1 +1,1 @@
-//! Coneccion y migraciones (TypeORM, Prisma, Mongose)
+//! Conexion y migraciones (TypeORM, Prisma, Mongose)

@@ -3,7 +3,7 @@ import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { pgProvider } from '../../common/providers/pg.provider';
 import { mysqlProvider } from '../../common/providers/mysql.provider';
-import { PrismaService } from '../../prisma.service';
+import { PrismaService } from '../../common/services/prisma.service';
 
 @Module({
   controllers: [TaskController],
