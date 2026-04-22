@@ -6,8 +6,8 @@ export const pgProvider = [{
             host: 'localhost', 
             port: 5432,
             user: 'postgres', 
-            password: 'linux', 
-            database: 'bgma_db' 
+            password: 'admin123', 
+            database: 'mld-db' 
         });
 
         await client.connect();

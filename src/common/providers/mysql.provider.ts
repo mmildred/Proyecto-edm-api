@@ -8,7 +8,7 @@ export const mysqlProvider = [{
             port: '3306',
             user: 'admin',
             password: 'admin123',
-            database: 'bgma_db'
+            database: 'mld-db'
 
         });
         return connection;

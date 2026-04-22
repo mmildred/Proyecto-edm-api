@@ -1,31 +1,57 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(200)
-  lastname  String   @db.VarChar(250)
-  username  String   @db.VarChar(100) @unique
-  password  String
-  created_at DateTime @default(now())
-  tasks     Task[]
+model logs {
+  id         Int      @id @default(autoincrement())
+  statusCode Int
+  timeStamp  DateTime @default(now())
+  path       String   @db.VarChar(200)
+  error      String   @db.Text
+  errorCode  String   @db.VarChar(200)
+  sesion_id  Int?
+  user       user?    @relation(fields: [sesion_id], references: [id], map: "Logs_sesion_id_fkey")
+
+  @@index([sesion_id], map: "Logs_sesion_id_fkey")
 }
 
-model Task {
+model rol {
+  id          Int     @id @default(autoincrement())
+  description String  @db.VarChar(200)
+  status      Boolean @default(true)
+  user        user[]
+}
+
+model task {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(150)
+  name        String   @db.VarChar(250)
   description String   @db.VarChar(200)
-  priority    Boolean
-  created_at  DateTime @default(now())
+  priority    Boolean  @default(false)
   user_id     Int
-  user        User     @relation(fields: [user_id], references: [id])
+  created_dt  DateTime @default(now())
+  user        user     @relation(fields: [user_id], references: [id], map: "Task_user_id_fkey")
+
+  @@index([user_id], map: "Task_user_id_fkey")
+}
+
+model user {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(200)
+  lastname     String   @db.VarChar(205)
+  username     String   @unique(map: "User_username_key") @db.VarChar(150)
+  password     String
+  refreshToken String?  @db.VarChar(500)
+  created_dt   DateTime @default(now())
+  hash         String?
+  rol_id       Int?     @default(1)
+  logs         logs[]
+  task         task[]
+  rol          rol?     @relation(fields: [rol_id], references: [id], map: "User_rol_id_fkey")
+
+  @@index([rol_id], map: "User_rol_id_fkey")
 }
