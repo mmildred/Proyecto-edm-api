@@ -23,13 +23,11 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    // Obtener los roles requeridos del decorador @Roles()
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    // Si no hay roles requeridos, cualquier usuario autenticado puede acceder
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }

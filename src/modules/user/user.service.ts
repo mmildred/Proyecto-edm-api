@@ -10,37 +10,55 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly utilSvc: UtilService,
-  ) {}
+  ) { }
 
   async getUsers(): Promise<User[]> {
     const users = await this.prisma.user.findMany({
       select: {
-        id: true, name: true, lastname: true, username: true,
-        password: false, refreshToken: false, created_dt: true, rol_id: true
-      },
+        id: true,
+        name: true,
+        lastname: true,
+        username: true,
+        created_dt: true,
+        rol: {
+          select: {
+            id: true,
+            description: true
+          }
+        }
+      }
     });
-    return users as unknown as User[];
+    return users as User[];
   }
 
-  async getUserById(id: number): Promise<User | null> {
+  async getUserById(id: number, currentUser?: any): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
-        id: true, name: true, lastname: true, username: true,
-        password: false, refreshToken: false, created_dt: true, rol_id: true
-      },
+        id: true,
+        name: true,
+        lastname: true,
+        username: true,
+        created_dt: true,
+        rol: {
+          select: {
+            id: true,
+            description: true
+          }
+        }
+      }
     });
-    return user as unknown as User | null;
+    return user as User;
   }
 
   async insertUser(createUserDto: CreateUserDto): Promise<User> {
     const { username, password, name, lastname } = createUserDto;
 
     // 1. VERIFICACIÓN DE CORREO DUPLICADO AL CREAR
-    const existingUser = await this.prisma.user.findFirst({ 
-      where: { username } 
+    const existingUser = await this.prisma.user.findFirst({
+      where: { username }
     });
-    
+
     if (existingUser) {
       // Lanzamos un error 409 Conflict que tu filtro limpiará
       throw new ConflictException('Ese correo electrónico ya se encuentra registrado');
@@ -75,12 +93,11 @@ export class UserService {
       delete dataToUpdate.username;
     }
 
-    // 2. VERIFICACIÓN DE CORREO DUPLICADO AL ACTUALIZAR (SOLO PARA ADMINS)
     if (dataToUpdate.username) {
       const emailTaken = await this.prisma.user.findFirst({
-        where: { 
+        where: {
           username: dataToUpdate.username,
-          id: { not: id } // Buscamos si alguien MÁS tiene este correo, excluyendo al usuario actual
+          id: { not: id }
         }
       });
 

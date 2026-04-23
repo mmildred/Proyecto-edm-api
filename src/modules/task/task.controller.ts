@@ -15,14 +15,12 @@ export class TaskController {
 
   @Get()
   public async getTasks(@Req() request: any): Promise<Task[]> {
-    // Enviamos request.user al servicio
     return await this.taskSvc.getTasks(request.user);
   }
 
   @Get(':id')
   @HttpCode(200)
   public async getTaskById(@Req() request: any, @Param("id", ParseIntPipe) id: number): Promise<Task> {
-    // Enviamos request.user al servicio
     const task = await this.taskSvc.getTaskById(id, request.user); 
 
     if (!task) {
@@ -34,7 +32,6 @@ export class TaskController {
   @Post()
   @ApiOperation({ summary: 'Insert a task in the db' })
   public async insertTask(@Req() request: any, @Body() task: CreateTaskDto): Promise<Task> {
-    // Enviamos request.user al servicio
     const result = await this.taskSvc.insertTask(task, request.user);
 
     if (!result) {
@@ -45,14 +42,12 @@ export class TaskController {
 
   @Put(":id")
   public async updateTask(@Req() request: any, @Param("id", ParseIntPipe) id: number, @Body() task: UpdateTaskDto): Promise<Task> {
-    // Enviamos request.user al servicio
     return await this.taskSvc.updateTask(id, task, request.user); 
   }
 
   @Delete(':id')
   public async deleteTask(@Req() request: any, @Param("id", ParseIntPipe) id: number): Promise<boolean> {
     try {
-      // Enviamos request.user al servicio
       const result = await this.taskSvc.deleteTask(id, request.user); 
       return true;
     } catch (error) {

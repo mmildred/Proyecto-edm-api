@@ -7,7 +7,6 @@ export class AuthGuard implements CanActivate {
 
     constructor(private readonly utilSvc: UtilService) { }
 
-    // Cambiamos a 'async' para poder usar 'await' adentro
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
@@ -17,10 +16,8 @@ export class AuthGuard implements CanActivate {
         }
 
         try {
-            // 🔥 AGREGAMOS AWAIT AQUÍ 🔥
-            const payload = await this.utilSvc.getPayload(token);
+            const payload = await this.utilSvc.getPayloadFromJWT(token);
 
-            // Ahora payload es el objeto JSON real, no una Promesa
             request.user = payload;
             
         } catch (error) {

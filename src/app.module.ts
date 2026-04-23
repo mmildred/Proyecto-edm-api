@@ -7,11 +7,13 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { JwtModule } from '@nestjs/jwt';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    AuthModule, 
+    AuthModule,
+    AuditModule,
     UserModule, 
     TaskModule,
     JwtModule.register({

@@ -8,13 +8,14 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly utilSvc: UtilService,
-  ) {}
+  ) { }
 
   async login(loginDto: AuthDto): Promise<any> {
     const { username, password } = loginDto;
 
     const user = await this.prisma.user.findFirst({
       where: { username },
+      include: { rol: true }
     });
 
     if (!user) {
@@ -22,7 +23,6 @@ export class AuthService {
     }
 
     const isPasswordValid = await this.utilSvc.checkPassword(password, user.password);
-
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
@@ -30,7 +30,8 @@ export class AuthService {
     const payload = {
       sub: user.id,
       username: user.username,
-      rol_id: user.rol_id, 
+      rol_id: user.rol_id,
+      role: user.rol?.description || 'user'
     };
 
     const refreshToken = await this.utilSvc.generateToken(payload, '7d');
@@ -69,7 +70,6 @@ export class AuthService {
   }
 
   async logout(userId: number): Promise<void> {
-    // @ts-ignore
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },
@@ -78,7 +78,6 @@ export class AuthService {
 
   async updateUserSession(userId: number, refreshToken: string | null) {
     const hash = refreshToken ? await this.utilSvc.hash(refreshToken) : null;
-    // @ts-ignore
     return this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: hash },

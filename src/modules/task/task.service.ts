@@ -10,7 +10,7 @@ export class TaskService {
 
   async getTasks(currentUser: any): Promise<Task[]> {
     const tasks = await this.prisma.task.findMany({
-      where: { user_id: currentUser.sub } // <-- Cambiado a .sub
+      where: { user_id: currentUser.sub } 
     });
     return tasks as Task[];
   }
@@ -30,7 +30,6 @@ export class TaskService {
 
   async insertTask(taskDto: CreateTaskDto, currentUser: any): Promise<Task> {
     
-    // 🔥 AGREGA ESTA LÍNEA PARA VER QUÉ HAY DENTRO DEL TOKEN 🔥
     console.log("=== DATOS DEL CURRENT USER ===", currentUser);
 
     const newTask = await this.prisma.task.create({
@@ -38,7 +37,7 @@ export class TaskService {
         name: taskDto.name as string,
         description: taskDto.description as string,
         priority: taskDto.priority as boolean,
-        user_id: currentUser.sub, // O quizá es currentUser.id, lo sabremos con el console.log
+        user_id: currentUser.sub,
       },
     });
 
@@ -47,12 +46,11 @@ export class TaskService {
 
   async updateTask(id: number, taskUpdate: UpdateTaskDto, currentUser: any): Promise<Task> {
     const existingTask = await this.prisma.task.findFirst({
-      where: { id, user_id: currentUser.sub }, // <-- Cambiado a .sub
+      where: { id, user_id: currentUser.sub },
     });
 
     if (!existingTask) throw new NotFoundException(`Tarea no encontrada o no tienes permisos`);
 
-    // Usamos el DTO directamente para actualizar
     const updatedTask = await this.prisma.task.update({
       where: { id },
       data: taskUpdate,
@@ -63,7 +61,7 @@ export class TaskService {
 
   async deleteTask(id: number, currentUser: any): Promise<Task> {
     const existingTask = await this.prisma.task.findFirst({
-      where: { id, user_id: currentUser.sub }, // <-- Cambiado a .sub
+      where: { id, user_id: currentUser.sub },
     });
 
     if (!existingTask) throw new NotFoundException(`Tarea no encontrada o no tienes permisos`);
