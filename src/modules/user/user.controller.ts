@@ -1,7 +1,7 @@
 import {
-  Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, Put, 
-  HttpException, NotFoundException, InternalServerErrorException, HttpStatus, 
-  UseGuards, Req 
+  Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, Put,
+  HttpException, NotFoundException, InternalServerErrorException, HttpStatus,
+  UseGuards, Req
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
@@ -65,18 +65,23 @@ export class UserController {
   @Put(':id')
   @UseGuards(AuthGuard)
   public async updateUser(
-    @Req() request: any, // <- Agregamos el Req aquí
+    @Req() request: any,
     @Param('id', ParseIntPipe) id: number,
     @Body() user: UpdateUserDto,
   ): Promise<User> {
     try {
-      const existing = await this.userSvc.getUserById(id);
+      const currentUser = request.user;
+      const isAdmin = currentUser.role === 'admin' || currentUser.rol_id === 2;
 
+      if (!isAdmin && currentUser.sub !== id) {
+        throw new HttpException('No tienes permiso para editar este perfil', HttpStatus.FORBIDDEN);
+      }
+
+      const existing = await this.userSvc.getUserById(id);
       if (!existing) {
         throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
       }
 
-      // Enviamos request.user al servicio
       return await this.userSvc.updateUser(id, user, request.user);
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -88,10 +93,9 @@ export class UserController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   public async deleteUser(
-    @Req() request: any, // <- Agregamos el Req aquí
+    @Req() request: any,
     @Param('id', ParseIntPipe) id: number
   ): Promise<boolean> {
-    // Enviamos request.user al servicio
     const result = await this.userSvc.deleteUser(id, request.user);
 
     if (!result) {

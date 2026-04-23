@@ -1,10 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -13,21 +14,23 @@ export class AuthController {
   }
 
   @Post('logout')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async logout(@Body('userId') userId: string) {
-    const id = parseInt(userId, 10);
-    if (isNaN(id)) {
-      throw new UnauthorizedException('ID de usuario inválido');
+  async logout(@Req() request: any) {
+    const userId = request.user?.sub;
+
+    if (!userId) {
+      throw new UnauthorizedException('Usuario no autenticado');
     }
-    await this.authService.logout(id);
+
+    await this.authService.logout(userId);
     return { message: 'Sesión cerrada exitosamente' };
   }
 
   @Post('refresh')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async refresh(@Body('refreshToken') refreshToken: string) {
-    // Implementación segura del refresh token flow
-    // (Se implementa en un servicio aparte normalmente)
     return { message: 'Refresh token endpoint' };
   }
 }

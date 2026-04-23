@@ -52,6 +52,19 @@ model user {
   logs         logs[]
   task         task[]
   rol          rol?     @relation(fields: [rol_id], references: [id], map: "User_rol_id_fkey")
+  auditLogs    AuditLog[]
 
   @@index([rol_id], map: "User_rol_id_fkey")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     
+  action    String   
+  severity  String   
+  ip        String?  
+  details   Json?    
+  timestamp DateTime @default(now())
+
+  user      user?    @relation(fields: [userId], references: [id])
 }
