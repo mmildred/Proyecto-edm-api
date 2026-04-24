@@ -9,8 +9,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() authDto: AuthDto) {
-    return this.authService.login(authDto);
+  async login(@Body() authDto: AuthDto, @Req() request: any) {
+    const ip = request.ip || request.connection?.remoteAddress;
+    return this.authService.login(authDto, ip);
   }
 
   @Post('logout')

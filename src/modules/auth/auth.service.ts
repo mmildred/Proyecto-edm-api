@@ -2,15 +2,19 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import { UtilService } from '../../services/util.service';
 import { AuthDto } from './dto/auth.dto';
+import { AuditService } from '../audit/audit.service';
+import { Inject, forwardRef } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly utilSvc: UtilService,
-  ) { }
+    @Inject(forwardRef(() => AuditService))
+    private readonly auditService: AuditService,
+  ) {}
 
-  async login(loginDto: AuthDto): Promise<any> {
+  async login(loginDto: AuthDto, ip?: string): Promise<any> {
     const { username, password } = loginDto;
 
     const user = await this.prisma.user.findFirst({
@@ -19,13 +23,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      await this.auditService.logLoginFailed(username, ip || 'unknown');
+      throw new UnauthorizedException('Credenciales invalidas');
     }
 
     const isPasswordValid = await this.utilSvc.checkPassword(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      await this.auditService.logLoginFailed(username, ip || 'unknown');
+      throw new UnauthorizedException('Credenciales invalidas');
     }
+
+    await this.auditService.logLoginSuccess(user.id, ip || 'unknown');
 
     const payload = {
       sub: user.id,
